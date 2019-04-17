@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -e
+
+. $(dirname $0)/util
+checkDependencies
+
+# check ASDK environment variables
+[ -n "$ASDF_INSTALL_VERSION" ] || (echo 'Missing ASDF_INSTALL_VERSION' >&2 && exit 1)
+[ -n "$ASDF_INSTALL_PATH" ] || (echo 'Missing ASDF_INSTALL_PATH' >&2 && exit 1)
+
+# install
+downloadPath="$(mktemp -d)"
+cd "${downloadPath}"
+
+DOWNLOADURL="https://github.com/${github_user}/${github_repo}/releases/download/v${ASDF_INSTALL_VERSION}/ble-${ASDF_INSTALL_VERSION}.tar.xz"
+echo "download: ${DOWNLOADURL}"
+curl -sfL -o "${downloadPath}/ble.tar.xz" "${DOWNLOADURL}"
+tar xzf ble.tar.xz
+mkdir -p "${ASDF_INSTALL_PATH}/bin"
+toolPath="${ASDF_INSTALL_PATH}/bin/${toolname}"
+mv "ble-${ASDF_INSTALL_VERSION}" "${ASDF_INSTALL_PATH}/ble"
+ln -s "${ASDF_INSTALL_PATH}/ble/ble.sh" "${toolPath}"
+chmod +x "${toolPath}"
+rm -rf "${downloadPath}"
